@@ -10,10 +10,8 @@ extern "C" {
 #define NUM_LEDS    192
 extern CRGB leds[NUM_LEDS];
 extern void displayCurrentTime(uint16_t time4Day);
-
+extern void clearPoint();
 #ifdef __cplusplus
 }
 #endif
 #endif
-
-

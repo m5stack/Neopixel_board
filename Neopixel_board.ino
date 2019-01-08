@@ -190,32 +190,41 @@ uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 uint8_t i = 0;
 uint32_t sys_time;
+uint16_t curtime;
 void loop()
 {
-  uint8_t i;
-  delay(1000);
-  //printLocalTime();
-  //https_test();
+    uint8_t i;
+    uint16_t lasttime;
+    //https_test();
+    curtime = printLocalTime();
 
     if(digitalRead(36)==1)
     {
-      Serial.printf("ad read = 111\r\n");
-      
-      displayCurrentTime(printLocalTime());
-
-      delay(1000);
-      FastLED.show();
+        Serial.printf("ad read = 111\r\n");
+        if(lasttime != curtime)
+        {
+            for(i=0;i<192;i++)
+            {
+                leds[i] = CRGB::Black;
+            }  
+        }
+        displayCurrentTime(curtime);
+        FastLED.show();
+        delay(500);
+        clearPoint();
+        delay(500);
      }
      else
      {
-      Serial.printf("ad read = 000\r\n");
-      for(i=0;i<192;i++)
-      {
-        leds[i] = CRGB::Black;
-      }
-      delay(1000);
-      FastLED.show();
+        Serial.printf("ad read = 000\r\n");
+        for(i=0;i<192;i++)
+        {
+            leds[i] = CRGB::Black;
+        }  
+        delay(1000);
+        FastLED.show();
      }
+     lasttime = curtime; 
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
