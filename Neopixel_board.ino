@@ -209,18 +209,17 @@ void loop()
             }  
         }
         displayCurrentTime(curtime);
-        FastLED.show();
+        diaplayPoint();
         delay(500);
+        FastLED.show();
         clearPoint();
         delay(500);
+        FastLED.show();
      }
      else
      {
         Serial.printf("ad read = 000\r\n");
-        for(i=0;i<192;i++)
-        {
-            leds[i] = CRGB::Black;
-        }  
+        clearLeds();
         delay(1000);
         FastLED.show();
      }
