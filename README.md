@@ -1,5 +1,5 @@
 # Neopixel_board
-本例程使用的是8x24阵列的Neopixel RGB LED
+本例程使用的是24x8阵列的Neopixel RGB LED
 
 需使用M5core + M5GO 底座驱动Neopixel灯板
 
