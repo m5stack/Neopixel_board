@@ -204,10 +204,7 @@ void loop()
         Serial.printf("ad read = 111\r\n");
         if(lasttime != curtime)
         {
-            for(i=0;i<NUM_LEDS;i++)
-            {
-                leds[i] = CRGB::Black;
-            }  
+            clearLeds(); 
         }
         displayCurrentTime(curtime);
         diaplayPoint();
