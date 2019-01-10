@@ -33,6 +33,7 @@ CRGB leds[NUM_LEDS];
 static TaskHandle_t FastLEDshowTaskHandle = 0;
 static TaskHandle_t userTaskHandle = 0;
 
+//Your personal wireless network
 const char* ssid       = "M5";
 const char* password   = "12345678";
 
@@ -203,7 +204,7 @@ void loop()
         Serial.printf("ad read = 111\r\n");
         if(lasttime != curtime)
         {
-            for(i=0;i<192;i++)
+            for(i=0;i<NUM_LEDS;i++)
             {
                 leds[i] = CRGB::Black;
             }  
