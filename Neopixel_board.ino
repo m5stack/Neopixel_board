@@ -1,4 +1,6 @@
-
+/*
+    Install FastLED library first. (please change wifi ssid and password to yours)
+*/
 #include "FastLED.h"
 #include <M5Stack.h>
 #include <WiFi.h>
@@ -41,7 +43,7 @@ const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 28800;
 const int   daylightOffset_sec = 7200;
 
-// This is GandiStandardSSLCA2.pem, the root Certificate Authority that signed 
+// This is GandiStandardSSLCA2.pem, the root Certificate Authority that signed
 // the server certifcate for the demo server https://jigsaw.w3.org in this
 // example. This certificate is valid until Sep 11 23:59:59 2024 GMT
 const char* rootCACertificate = \
@@ -91,18 +93,18 @@ uint16_t  printLocalTime()
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   time4Day = timeinfo.tm_hour*1000 + timeinfo.tm_min;
   Serial.printf("time4Day:%d \r\n",time4Day);
-  
-  M5.Lcd.clear(BLACK);
+
   M5.Lcd.setTextSize(1);
   M5.Lcd.setTextFont(2);
-  M5.Lcd.setCursor(0, 0);
   M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.fillRect(0,45,300,45,BLACK);
+  M5.Lcd.setCursor(0, 45);
   M5.Lcd.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   return time4Day;
 }
 
 /** show() for ESP32
- *  Call this function instead of FastLED.show(). It signals core 0 to issue a show, 
+ *  Call this function instead of FastLED.show(). It signals core 0 to issue a show,
  *  then waits for a notification that it is done.
  */
 void FastLEDshowESP32()
@@ -144,29 +146,37 @@ WiFiMulti WiFiMulti;
 
 void InitWifi()
 {
+  M5.Lcd.clear(BLACK);
+  M5.Lcd.setTextColor(WHITE); 
+  M5.Lcd.setTextFont(4);
+  M5.Lcd.setTextSize(1); 
+  M5.Lcd.println("Please edit the change the wifi *ssid and *password in the code …");
+  M5.Lcd.println(" ");
+  M5.Lcd.printf("Connecting to %s ", ssid);
   Serial.printf("Connecting to %s ", ssid);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       Serial.print(".");
+      M5.Lcd.print(".");
   }
+  M5.Lcd.println(" ");
   Serial.println(" CONNECTED");
-  
+  M5.Lcd.println(" CONNECTED");
+
   //init and get the time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   printLocalTime();
 
   //disconnect WiFi as it's no longer needed
  // WiFi.disconnect(true);
-  //WiFi.mode(WIFI_OFF);  
+  //WiFi.mode(WIFI_OFF);
 }
 void setup() {
   delay(3000); // 3 second delay for recovery
   Serial.begin(115200);
   M5.begin();
-  InitWifi();
-  pinMode(36, INPUT);
-  dacWrite(25, 0);
+
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   //FastLED.addLeds<LED_TYPE,DATA_PIN,CLK_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -178,10 +188,22 @@ void setup() {
   Serial.print("Main code running on core ");
   Serial.println(core);
 
-    // -- Create the FastLED show task
-    xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
+  // -- Create the FastLED show task
+  xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
+  
+  neopixel_test();
+  InitWifi();
+  pinMode(36, INPUT);
+  dacWrite(25, 0);
+  
+  M5.Lcd.clear(BLACK);
+  M5.Lcd.setTextColor(YELLOW); 
+  M5.Lcd.setTextFont(4);
+  M5.Lcd.setTextSize(1); 
+  M5.Lcd.setCursor(40, 0);
+  M5.Lcd.println("Neoflash example");
+  M5.Lcd.setTextColor(WHITE);
 }
-
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
@@ -204,7 +226,7 @@ void loop()
         Serial.printf("ad read = 111\r\n");
         if(lasttime != curtime)
         {
-            clearLeds(); 
+            clearLeds();
         }
         displayCurrentTime(curtime);
         diaplayPoint();
@@ -221,7 +243,7 @@ void loop()
         delay(1000);
         FastLED.show();
      }
-     lasttime = curtime; 
+     lasttime = curtime;
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
@@ -233,27 +255,27 @@ void nextPattern()
   i++;
 }
 
-void rainbow() 
+void rainbow()
 {
   // FastLED's built-in rainbow generator
   fill_rainbow( leds, NUM_LEDS, gHue, 7);
 }
 
-void rainbowWithGlitter() 
+void rainbowWithGlitter()
 {
   // built-in FastLED rainbow, plus some random sparkly glitter
   rainbow();
   addGlitter(80);
 }
 
-void addGlitter( fract8 chanceOfGlitter) 
+void addGlitter( fract8 chanceOfGlitter)
 {
   if( random8() < chanceOfGlitter) {
     leds[ random16(NUM_LEDS) ] += CRGB::White;
   }
 }
 
-void confetti() 
+void confetti()
 {
   // random colored speckles that blink in and fade smoothly
   fadeToBlackBy( leds, NUM_LEDS, 10);
@@ -296,20 +318,20 @@ void https_test(void)
   if(client) {
     client -> setCACert(rootCACertificate);
     {
-      // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is 
+      // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is
       HTTPClient https;
-  
+
       Serial.print("[HTTPS] begin...\n");
       if (https.begin("https://jigsaw.w3.org/HTTP/connection.html")) {  // HTTPS
         Serial.print("[HTTPS] GET...\n");
         // start connection and send HTTP header
         int httpCode = https.GET();
-  
+
         // httpCode will be negative on error
         if (httpCode > 0) {
           // HTTP header has been send and Server response header has been handled
           Serial.printf("[HTTPS] GET... code: %d\n", httpCode);
-  
+
           // file found at server
           if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
             String payload = https.getString();
@@ -318,7 +340,7 @@ void https_test(void)
         } else {
           Serial.printf("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
         }
-  
+
         https.end();
       } else {
         Serial.printf("[HTTPS] Unable to connect\n");
@@ -326,7 +348,7 @@ void https_test(void)
 
       // End extra scoping block
     }
-  
+
     delete client;
   } else {
     Serial.println("Unable to create client");
@@ -337,3 +359,41 @@ void https_test(void)
   delay(10000);
 
  }
+
+void neopixel_test()
+{
+    M5.Lcd.clear(BLACK);
+    M5.Lcd.setTextColor(WHITE); 
+    M5.Lcd.setTextFont(4);
+    M5.Lcd.setTextSize(1); 
+    M5.Lcd.setCursor(20, 0);
+    M5.Lcd.println("Arduino neopixel test");
+    uint16_t i;
+    for(i=0;i<192;i++)
+    {
+        leds[i] = CRGB::White;
+        delay(15);
+        FastLED.show();
+    }
+    
+    for(uint16_t j=0;j<3;j++)
+    {
+        for(i=0;i<192;i++)
+        {
+            leds[i] = CRGB::Black;
+        }
+        FastLED.show();
+        delay(500);
+        for(i=0;i<192;i++)
+        {
+            leds[i] = CRGB::White;
+        }
+        FastLED.show();
+        delay(500);
+    }
+    for(i=0;i<192;i++)
+    {
+        leds[i] = CRGB::Black;
+    }
+    FastLED.show();
+}
