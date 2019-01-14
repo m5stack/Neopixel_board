@@ -16,6 +16,15 @@ int point[2]  = {84,132};                                                       
 int lenth[11] = {18,10,16,16,13,16,18,10,20,18,2};
 int *num[10]={zero,one,two,three,four,five,six,seven,eight,nine};
 int index_led;
+
+void LightallLeds()
+{
+    for(index_led=0;index_led<192;index_led++)
+    {
+        leds[index_led] = CRGB::White;
+    } 
+}
+
 void displayCurrentTime(uint16_t time4Day)
 {
     int offset = 0;

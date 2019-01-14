@@ -35,6 +35,7 @@ CRGB leds[NUM_LEDS];
 static TaskHandle_t FastLEDshowTaskHandle = 0;
 static TaskHandle_t userTaskHandle = 0;
 
+//Your personal wireless network
 const char* ssid       = "M5";
 const char* password   = "12345678";
 
@@ -93,12 +94,11 @@ uint16_t  printLocalTime()
   time4Day = timeinfo.tm_hour*1000 + timeinfo.tm_min;
   Serial.printf("time4Day:%d \r\n",time4Day);
 
-  // M5.Lcd.clear(BLACK);
   M5.Lcd.setTextSize(1);
   M5.Lcd.setTextFont(2);
   M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.fillRect(0,25,100,25,BLACK);
-  M5.Lcd.setCursor(0, 25);
+  M5.Lcd.fillRect(0,45,300,45,BLACK);
+  M5.Lcd.setCursor(0, 45);
   M5.Lcd.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
   return time4Day;
 }
@@ -146,13 +146,23 @@ WiFiMulti WiFiMulti;
 
 void InitWifi()
 {
+  M5.Lcd.clear(BLACK);
+  M5.Lcd.setTextColor(WHITE); 
+  M5.Lcd.setTextFont(4);
+  M5.Lcd.setTextSize(1); 
+  M5.Lcd.println("Please edit the change the wifi *ssid and *password in the code …");
+  M5.Lcd.println(" ");
+  M5.Lcd.printf("Connecting to %s ", ssid);
   Serial.printf("Connecting to %s ", ssid);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       Serial.print(".");
+      M5.Lcd.print(".");
   }
+  M5.Lcd.println(" ");
   Serial.println(" CONNECTED");
+  M5.Lcd.println(" CONNECTED");
 
   //init and get the time
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -166,13 +176,7 @@ void setup() {
   delay(3000); // 3 second delay for recovery
   Serial.begin(115200);
   M5.begin();
-  M5.Lcd.clear(BLACK);
-  M5.Lcd.setTextColor(YELLOW); M5.Lcd.setTextSize(2); M5.Lcd.setCursor(40, 0);
-  M5.Lcd.println("Neoflash example");
-  M5.Lcd.setTextColor(WHITE);
-  InitWifi();
-  pinMode(36, INPUT);
-  dacWrite(25, 0);
+
   // tell FastLED about the LED strip configuration
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   //FastLED.addLeds<LED_TYPE,DATA_PIN,CLK_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -184,10 +188,22 @@ void setup() {
   Serial.print("Main code running on core ");
   Serial.println(core);
 
-    // -- Create the FastLED show task
-    xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
+  // -- Create the FastLED show task
+  xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
+  
+  neopixel_test();
+  InitWifi();
+  pinMode(36, INPUT);
+  dacWrite(25, 0);
+  
+  M5.Lcd.clear(BLACK);
+  M5.Lcd.setTextColor(YELLOW); 
+  M5.Lcd.setTextFont(4);
+  M5.Lcd.setTextSize(1); 
+  M5.Lcd.setCursor(40, 0);
+  M5.Lcd.println("Neoflash example");
+  M5.Lcd.setTextColor(WHITE);
 }
-
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
@@ -210,10 +226,7 @@ void loop()
         Serial.printf("ad read = 111\r\n");
         if(lasttime != curtime)
         {
-            for(i=0;i<192;i++)
-            {
-                leds[i] = CRGB::Black;
-            }
+            clearLeds();
         }
         displayCurrentTime(curtime);
         diaplayPoint();
@@ -346,3 +359,41 @@ void https_test(void)
   delay(10000);
 
  }
+
+void neopixel_test()
+{
+    M5.Lcd.clear(BLACK);
+    M5.Lcd.setTextColor(WHITE); 
+    M5.Lcd.setTextFont(4);
+    M5.Lcd.setTextSize(1); 
+    M5.Lcd.setCursor(20, 0);
+    M5.Lcd.println("Arduino neopixel test");
+    uint16_t i;
+    for(i=0;i<192;i++)
+    {
+        leds[i] = CRGB::White;
+        delay(15);
+        FastLED.show();
+    }
+    
+    for(uint16_t j=0;j<3;j++)
+    {
+        for(i=0;i<192;i++)
+        {
+            leds[i] = CRGB::Black;
+        }
+        FastLED.show();
+        delay(500);
+        for(i=0;i<192;i++)
+        {
+            leds[i] = CRGB::White;
+        }
+        FastLED.show();
+        delay(500);
+    }
+    for(i=0;i<192;i++)
+    {
+        leds[i] = CRGB::Black;
+    }
+    FastLED.show();
+}
